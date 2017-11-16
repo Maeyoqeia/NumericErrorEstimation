@@ -92,7 +92,7 @@ classdef TransformationObject < handle
             str = strcat('Fehler (Mean =',num2str(double(obj.meanError)),')'); %double precision
             xlabel('Samplingpunkte')
             ylabel('Fehlergröße')
-            legend(h, 'Fehler', '5% der Maximalwerte','Location','southeast')
+            legend(h, 'Fehler', '5% der Maximalwerte','Location','southeastoutside')
             title(ax1,str);
 
             ax2 = subplot(2,1,2);
@@ -105,7 +105,7 @@ classdef TransformationObject < handle
             j(2) = plot(obj.end_pt(1),obj.end_pt(2), 'og');
             xlabel('Weg in x-Richtung')
             ylabel('Weg in y-Richtung')
-            legend(j, 'Startpunkt', 'Endpunkt','Location','southeast')
+            legend(j, 'Startpunkt', 'Endpunkt','Location','southeastoutside')
             title(ax2,'Originale und transformierte Punkte');
             hold off;
             str = sprintf('test%d/iteration%d.jpg',obj.testnumber,obj.iteration);
