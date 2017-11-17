@@ -78,13 +78,6 @@ classdef TransformationObject < handle
         end
         function plot(obj)
             
-            ori_pts = [];
-            ori_pts(1,:) = sample_multiple(obj.original_pts(1,:), obj.sampleSize_2);
-            ori_pts(2,:) = sample_multiple(obj.original_pts(2,:),obj.sampleSize_2);
-
-            trs_pts = obj.transformed_pts_tsp;
-            trs_pts(3,:) = [];
-            
             figure('visible','off');
             ax1 = subplot(2,1,1);
             l = length(obj.error);
@@ -127,6 +120,8 @@ classdef TransformationObject < handle
             saveas(gcf,str)
       
             figure('visible','off');
+            trs = obj.transformed_pts_tsp;
+            trs(3,:) = [];
             plot(obj.dets2)
             xlabel('Samplingpunkte')
             ylabel('Determinante')
@@ -149,11 +144,6 @@ classdef TransformationObject < handle
             title('Konditionszahl')
             str = sprintf('test%d/konditionszahl%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str);
-            
-            figure 
-            plot(obj.dets2, ori_pts)
-            figure
-            plot(obj.dets2, trs_pts)
        end
     
     end
