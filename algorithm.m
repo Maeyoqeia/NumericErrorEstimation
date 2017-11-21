@@ -1,4 +1,4 @@
-testnumber = 4;
+testnumber = 6;
 
 error = 0.001;
 sSize1 = 2; % gibt an, wieviele Punkte der Linie im kartesischen Raum ausgewählt werden
@@ -10,7 +10,7 @@ iteration = 1;
 dir_path = sprintf('test%d',testnumber);
 mkdir(dir_path)
 while(1)
-t_obj = TransformationObject([0;0],[0;1],sSize1, sSize2, angles,[1,1,1],iteration,testnumber);
+t_obj = TransformationObject([2;1],[1;1],sSize1, sSize2, angles,[1,1,1],iteration,testnumber);
 t_obj.toJSpace()
 t_obj.trajGen()
 t_obj.toTSpace()

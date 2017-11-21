@@ -22,6 +22,7 @@ classdef TransformationObject < handle
         kond2
         iteration
         testnumber
+        def
     end
     
     methods
@@ -50,12 +51,12 @@ classdef TransformationObject < handle
             obj.trajectory = (trajectory1(obj.transformed_pts_jsp,obj.sampleSize_2)); %in joint space
             for p = 1:length(obj.trajectory)
                 point = obj.trajectory(:,p);
-                obj.dets2(p) = obj.arms(1)*obj.arms(2)*sin(point(1) + point(2))*cos(point(1)) - obj.arms(1)*obj.arms(2)*cos(point(1) + point(2))*sin(point(1));
+                obj.dets2(p) = obj.arms(1)*obj.arms(2)*sin(point(2));
                 [j,d] = jac(obj.arms(1),obj.arms(2),obj.arms(3),point(1),point(2),point(3));
                 if p==1
-                    def = obj.dets2(p);
+                    obj.def(p) = 0;
                 else
-                 def = obj.dets2(p)-obj.dets2(p-1);
+                 obj.def(p) = obj.dets2(p)-obj.dets2(p-1);
                 end
             obj.kond2(p) = cond(j);
             end
@@ -78,7 +79,7 @@ classdef TransformationObject < handle
         end
         function plot(obj)
             
-            figure('visible','off');
+            figure%('visible','off');
             ax1 = subplot(2,1,1);
             l = length(obj.error);
             five_p = ceil(l*0.05);
@@ -119,7 +120,7 @@ classdef TransformationObject < handle
             str = sprintf('test%d/determinante_und_fehler%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
       
-            figure('visible','off');
+            figure%('visible','off');
             plot(obj.dets2)
             xlabel('Samplingpunkte')
             ylabel('Determinante')
@@ -127,7 +128,7 @@ classdef TransformationObject < handle
             str = sprintf('test%d/determinante%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
             
-            figure('visible','off');
+            figure%('visible','off');
             plot(obj.kond2,obj.error)
             xlabel('Fehlergröße')
             ylabel('Konditionszahl')
@@ -135,13 +136,17 @@ classdef TransformationObject < handle
             str = sprintf('test%d/konditionszahl_und_fehler%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
             
-            figure('visible','off');
+            figure%('visible','off');
             plot(obj.kond2);
             xlabel('Samplingpunkte')
             ylabel('Konditionszahl')
             title('Konditionszahl')
             str = sprintf('test%d/konditionszahl%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str);
+            figure;
+            plot(obj.def,obj.error)
+            figure; 
+            plot(obj.def)
        end
     
     end
