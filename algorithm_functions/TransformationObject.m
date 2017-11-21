@@ -79,7 +79,18 @@ classdef TransformationObject < handle
         end
         function plot(obj)
             
+<<<<<<< HEAD
             figure%('visible','off');
+=======
+            ori_pts = [];
+            ori_pts(1,:) = sample_multiple(obj.original_pts(1,:), obj.sampleSize_2);
+            ori_pts(2,:) = sample_multiple(obj.original_pts(2,:),obj.sampleSize_2);
+
+            trs_pts = obj.transformed_pts_tsp;
+            trs_pts(3,:) = [];
+            
+            figure('visible','off');
+>>>>>>> 6a995289fcef9088de0062eb2f4d9bc92f6e8d38
             ax1 = subplot(2,1,1);
             l = length(obj.error);
             five_p = ceil(l*0.05);
@@ -143,10 +154,18 @@ classdef TransformationObject < handle
             title('Konditionszahl')
             str = sprintf('test%d/konditionszahl%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str);
+<<<<<<< HEAD
             figure;
             plot(obj.def,obj.error)
             figure; 
             plot(obj.def)
+=======
+            
+            figure 
+            plot(obj.dets2, ori_pts)
+            figure
+            plot(obj.dets2, trs_pts)
+>>>>>>> 6a995289fcef9088de0062eb2f4d9bc92f6e8d38
        end
     
     end
