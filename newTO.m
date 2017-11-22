@@ -13,14 +13,17 @@ sol3 = (theta1+theta2+theta3); %groß theta
 fkin_matrix = [sol1;sol2;sol3]; %ergibt die gelenkwinkel
 %erfasse lineare interpolation dieser winkel - alternative
 %trajektorienberechnung
-pxtilde = subs(sol1, theta1, ((1-t)*th11+t*th12))
-pxtilde = subs(pxtilde, theta2, ((1-t)*th21+t*th22))
-pxtilde = subs(pxtilde, theta3, ((1-t)*th31+t*th32))
+pxtilde(t) = subs(sol1, theta1, ((1-t)*th11+t*th12))
+pxtilde(t) = subs(pxtilde, theta2, ((1-t)*th21+t*th22))
+pxtilde(t) = subs(pxtilde, theta3, ((1-t)*th31+t*th32))
 
-pytilde = subs(sol2, theta1, ((1-t)*th11+t*th12))
-pytilde = subs(pytilde, theta2, ((1-t)*th21+t*th22))
-pytilde = subs(pytilde, theta3, ((1-t)*th31+t*th32))
+pytilde(t) = subs(sol2, theta1, ((1-t)*th11+t*th12))
+pytilde(t) = subs(pytilde, theta2, ((1-t)*th21+t*th22))
+pytilde(t) = subs(pytilde, theta3, ((1-t)*th31+t*th32))
 
+omegatilde(t) = subs(sol3, theta1, (1-t)*th11+t*th12)
+omegatilde(t) = subs(omegatilde, theta2, (1-t)*th21+t*th22)
+omegatilde(t) = subs(omegatilde, theta3, (1-t)*th31+t*th32)
 
 J = [diff(sol1,theta1),diff(sol1,theta2),diff(sol1,theta3); 
     diff(sol2,theta1),diff(sol2,theta2),diff(sol2,theta3);
@@ -30,11 +33,11 @@ J = [diff(sol1,theta1),diff(sol1,theta2),diff(sol1,theta3);
 % py = (1-t)*py1+t*py2
 % 
 
-pytilde_sub = subs(pytilde, [th11, th12, th21, th22, th31,th32,length1, ...
+pytilde_sub(t) = subs(pytilde, [th11, th12, th21, th22, th31,th32,length1, ...
     length2,length3], [0,pi/6, pi/2,2*pi/3, -pi/2, -5*pi/6,1,1,1])
 
-T = linspace(0,1,100)
-for i = 1:length(T)
-val = subs(pytilde_sub,t,T(i))
-py_tilde_sub_t(i) = val
-end
+% T = linspace(0,1,100)
+% for i = 1:length(T)
+% val = subs(pytilde_sub,t,T(i))
+% py_tilde_sub_t(i) = val
+% end

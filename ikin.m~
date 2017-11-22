@@ -4,10 +4,10 @@ function [theta,theta2] = ikin(ox,oy,omega,length) %annahme - ox und oy sind an 
 %omega-Rotation des Greifers, hier Winkel zur x-Achse
 %length- armlängen
 %output: beide Gelenkstellungen, die möglich sind (righty lefty solution)
-% ox = sym(ox);
-% oy = sym(oy);
-% omega = sym(omega);
-% length = sym(length);
+ox = sym(ox);
+oy = sym(oy);
+omega = sym(omega);
+length = sym(length);
 %vpa increased variable precision (symbolic math toolbox) -default
 %precision 32 digits
 % ox = vpa(ox)
