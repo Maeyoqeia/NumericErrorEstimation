@@ -127,7 +127,7 @@ classdef TransformationObject < handle
             str = sprintf('test%d/determinante_und_fehler%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
       
-            figure%('visible','off');
+            figure('visible','off');
             plot(obj.dets2)
             xlabel('Samplingpunkte')
             ylabel('Determinante')
@@ -135,7 +135,7 @@ classdef TransformationObject < handle
             str = sprintf('test%d/determinante%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
             
-            figure%('visible','off');
+            figure('visible','off');
             plot(obj.kond2,obj.error)
             xlabel('Fehlergröße')
             ylabel('Konditionszahl')
@@ -143,7 +143,7 @@ classdef TransformationObject < handle
             str = sprintf('test%d/konditionszahl_und_fehler%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
             
-            figure%('visible','off');
+            figure('visible','off');
             plot(obj.kond2);
             xlabel('Samplingpunkte')
             ylabel('Konditionszahl')
@@ -151,11 +151,10 @@ classdef TransformationObject < handle
             str = sprintf('test%d/konditionszahl%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str);
 
-            figure;
-            plot(obj.def,obj.error)
-            figure; 
-            plot(obj.def)
-
+            %plot trajectory in joint space
+            figure('visible','off');
+            plot3(obj.trajectory(1,:),obj.trajectory(2,:),obj.trajectory(3,:))
+            axis([-pi pi -pi pi -pi pi])
        end
     
     end

@@ -29,6 +29,7 @@ theta(1) = -IN+OUT ; %IN, IN2 negativ
 theta2(1) = -IN2+OUT;
 if(abs(sin(theta(2))) < eps(0.75))
     print('%s', singularity)
+    %zweiten winkel nehmen?
 end
 theta(3) = omega-(theta(1)+theta(2));
 theta2(3) = omega -(theta2(1)+theta2(2));

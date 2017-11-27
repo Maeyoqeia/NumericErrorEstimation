@@ -9,9 +9,8 @@ sSize2 = 40; % gibt an wie viele Zwischenpunkte zwischen jedem Punkt eingefügt 
 angles_ori = zeros(1,sSize1);
 angles = sample_multiple(angles_ori,0);
 iteration = 1;
-poss1 = []
-poss2 = []
-dir_path = sprintf('test_%d',testnumber);
+
+dir_path = sprintf('test__%d',testnumber);
 mkdir(dir_path)
 sampling = sample(start_pt,end_pt,-1,sSize1); %sample points from line
 while(1)
@@ -24,29 +23,63 @@ for i = 2:size(transformed_pts_jsp,2)
     
     j1 = transformed_pts_jsp(:,i-1)
     j2 = transformed_pts_jsp(:,i)
-% th11 = j1(1)
-% th12 = j1(2)
-% th21 =j1(3)
-% th22 = j2(1)
-% th31 = j2(2)
-% th32 = j2(3)
-syms t th11 th12 th21 th22 th31 th32 length1 length2 length3 px1 px2 py1 py2
-assume( 0 <= t <= 1)
-px(t) = (1-t)*px1+t*px2
-py(t) = (1-t)*py1+t*py2
-px_sub = subs(px, [px1, px2],[sampling(1,i-1), sampling(1,i)])
-py_sub = subs(py, [py1, py2],[sampling(2,i-1), sampling(2,i)])
-pytilde(t) = length3*sin(t*th12 + t*th22 + t*th32 - th11*(t - 1) - th21*(t - 1) - th31*(t - 1)) + length2*sin(t*th12 + t*th22 - th11*(t - 1) - th21*(t - 1)) + length1*sin(t*th12 - th11*(t - 1));
+syms length1 length2 length3 positive
+syms theta1 theta2 theta3 
 
-pxtilde(t) = length3*cos(t*th12 + t*th22 + t*th32 - th11*(t - 1)...
-    - th21*(t - 1) - th31*(t - 1)) + length2*cos(t*th12 + t*th22 -...
-    th11*(t - 1) - th21*(t - 1)) + length1*cos(t*th12 - th11*(t - 1));
+syms max_a max_v T thetas thetae
+
+syms t t2 th11 th12 th21 th22 th31 th32 length1 length2 length3 px1 px2 py1 py2 theta theta_d theta_dd
+assume( 0 <= t <= 1)
+maxv = 5
+maxb = 10
+th11  = 0 
+th12  = pi/6
+th21 = pi/2
+th22 = 2*pi/3
+th31= -pi/2
+th32 = -5*pi/6
+%berechne T bei gegebener maximalbeschleunigung und geschwindigkeit
+max_v(T) = 3*(thetae-thetas)/(2*T)
+T_max_v = solve(max_v == maxv,T)
+tmv1 = subs(T_max_v, [thetae, thetas], [th12, th11])
+tmv2 = subs(T_max_v, ...
+    [thetae, thetas], [th22, th21])
+tmv3 = subs(T_max_v, [thetae, thetas], [th32, th31])
+% berechne maximum für jeden joint
+Tmaxv = max(max(tmv1,tmv3),tmv2)
+%berechne T auch für die beschleunigung annahme: bremsen geht genauso
+%schnell wie beschleunigen
+max_a(T) = abs(6*(thetae-thetas)/T^2)
+T_max_a = solve(max_a == maxb,T)
+
+Tmaxa = max(max(subs(T_max_a, [thetae, thetas], [th12, th11]),subs(T_max_a, ...
+    [thetae, thetas], [th22, th21])),subs(T_max_a, [thetae, thetas], [th32, th31]))
+%wähle größeres T aus
+T = max(Tmaxa,Tmaxv)
+
+%eine formel für jeden Joint abhängig von T und t ist damit gegeben durch
+theta(t) = thetas + (3*t^2/T^2+2*t^3/T^3)*(thetae-thetas)
+
+sol1 = (length1)*cos(theta1)+length2*cos(theta1+theta2)+length3*cos(theta1+theta2+theta3); %x
+sol2 = (length1)*sin(theta1)+length2*sin(theta1+theta2)+length3*sin(theta1+theta2+theta3); %y
+sol3 = (theta1+theta2+theta3); %groß theta
+fkin_matrix = [sol1;sol2;sol3]; %ergibt die gelenkwinkel
+%erfasse lineare interpolation dieser winkel - alternative
+%trajektorienberechnung
+pxtilde(t) = subs(sol1, theta1, ((1-3*t^2/T^2+2*t^3/T^3)*th11+(3*t^2/T^2+2*t^3/T^3)*th12))
+pxtilde(t) = subs(pxtilde, theta2, ((1-(3*t^2/T^2+2*t^3/T^3))*th21+(3*t^2/T^2+2*t^3/T^3)*th22))
+pxtilde(t) = subs(pxtilde, theta3, ((1-(3*t^2/T^2+2*t^3/T^3))*th31+(3*t^2/T^2+2*t^3/T^3)*th32))
+
+pytilde(t) = subs(sol2, theta1, ((1-(3*t^2/T^2+2*t^3/T^3))*th11+(3*t^2/T^2+2*t^3/T^3)*th12))
+pytilde(t) = subs(pytilde, theta2, ((1-(3*t^2/T^2+2*t^3/T^3))*th21+(3*t^2/T^2+2*t^3/T^3)*th22))
+pytilde(t) = subs(pytilde, theta3, ((1-(3*t^2/T^2+2*t^3/T^3))*th31+(3*t^2/T^2+2*t^3/T^3)*th32))
+
 
 pxtilde_sub(t) = subs(pxtilde, [th11, th12, th21, th22, th31,th32,length1, ...
     length2,length3], [j1(1), j2(1),j1(2), j2(2),j1(3),j2(3),arms(1),arms(2),arms(3)]);
 pytilde_sub(t) = subs(pytilde, [th11, th12, th21, th22, th31,th32,length1, ...
     length2,length3], [j1(1), j2(1),j1(2), j2(2),j1(3),j2(3),arms(1),arms(2),arms(3)]);
-
+%möglichkeit 1
 max_t_y = solve(diff(py_sub-pytilde_sub)==0,t) %das t wo y die maximale abweichung hat
 max_t_x = solve(diff(px_sub- pxtilde_sub)==0,t)
 
@@ -84,7 +117,6 @@ if(exy > error_size)
     newsampling = [newsampling sampling(:,i-1)*(0.5)+sampling(:,i)*0.5]
  end
 
-
 %möglichkeit2 berechne den maximaltwert des vektors
 
 l(t) = ((px_sub-pxtilde_sub)^2+(py_sub-pytilde_sub)^2)
@@ -106,10 +138,6 @@ if(error_flag == 0) %nie ein fehler aufgetreten
 end
 
 end
-figure;
-plot(poss1)
-figure;
-plot(poss2)
 file_name = 'description.txt';
 full_name = fullfile(dir_path, file_name);
 fileID = fopen(full_name,'wt');
