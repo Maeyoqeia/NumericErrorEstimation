@@ -9,8 +9,7 @@ sSize2 = 40; % gibt an wie viele Zwischenpunkte zwischen jedem Punkt eingefügt 
 angles_ori = zeros(1,sSize1);
 angles = sample_multiple(angles_ori,0);
 iteration = 1;
-poss1 = []
-poss2 = []
+
 dir_path = sprintf('test__%d',testnumber);
 mkdir(dir_path)
 sampling = sample(start_pt,end_pt,-1,sSize1); %sample points from line
@@ -27,14 +26,11 @@ for i = 2:size(transformed_pts_jsp,2)
 syms length1 length2 length3 positive
 syms theta1 theta2 theta3 
 
-syms max_a max_v T thetas thetae
+syms Ta
 
+Ta = vmax/amax
 syms t t2 th11 th12 th21 th22 th31 th32 length1 length2 length3 px1 px2 py1 py2 theta theta_d theta_dd
 assume( 0 <= t <= 1)
-px(t) = (1-t)*px1+t*px2
-py(t) = (1-t)*py1+t*py2
-px_sub = subs(px, [px1, px2],[sampling(1,i-1), sampling(1,i)])
-py_sub = subs(py, [py1, py2],[sampling(2,i-1), sampling(2,i)])
 maxv = 5
 maxb = 10
 th11  = 0 

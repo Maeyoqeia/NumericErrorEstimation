@@ -1,8 +1,8 @@
 
-arms = [1 1 1 ];
 testnumber = 1;
+arms = [1 1 1 ];
 start_pt = [2;1];
-end_pt = [1;1];
+end_pt = [0;1];
 error_size = 0.01;
 sSize1 = 2; % gibt an, wieviele Punkte der Linie im kartesischen Raum ausgewählt werden
 sSize2 = 40; % gibt an wie viele Zwischenpunkte zwischen jedem Punkt eingefügt werden
@@ -14,6 +14,7 @@ poss2 = []
 dir_path = sprintf('test_%d',testnumber);
 mkdir(dir_path)
 sampling = sample(start_pt,end_pt,-1,sSize1); %sample points from line
+l_array = {}
 while(1)
 transformed_pts_jsp = (transform(sampling, angles,arms)) %to joint space
     error_flag = 0;
@@ -38,6 +39,22 @@ px_sub = subs(px, [px1, px2],[sampling(1,i-1), sampling(1,i)])
 py_sub = subs(py, [py1, py2],[sampling(2,i-1), sampling(2,i)])
 pytilde(t) = length3*sin(t*th12 + t*th22 + t*th32 - th11*(t - 1) - th21*(t - 1) - th31*(t - 1)) + length2*sin(t*th12 + t*th22 - th11*(t - 1) - th21*(t - 1)) + length1*sin(t*th12 - th11*(t - 1));
 
+% pxtilde(t) = length3*(exp(i*(t*th12 + t*th22 + t*th32 - th11*(t - 1)...
+%     - th21*(t - 1) - th31*(t - 1)))+exp(-i* (t*th12 + t*th22 + t*th32 - th11*(t - 1)...
+%     - th21*(t - 1) - th31*(t - 1))))/2+ length2*(exp(i*(t*th12 + t*th22 -...
+%     th11*(t - 1) - th21*(t - 1)))+ exp(-i*(t*th12 + t*th22 -...
+%     th11*(t - 1) - th21*(t - 1))))/2+ length1*(exp(i*(t*th12 - th11*(t - 1)))+exp(-i*(t*th12 - th11*(t - 1))))/2;
+% 
+% pytilde(t) = length3*(exp(i*(t*th12 + t*th22 + t*th32 - th11*(t - 1)...
+%     - th21*(t - 1) - th31*(t - 1)))-exp(-i* (t*th12 + t*th22 + t*th32 - th11*(t - 1)...
+%     - th21*(t - 1) - th31*(t - 1))))/(2*i)+ length2*(exp(i*(t*th12 + t*th22 -...
+%     th11*(t - 1) - th21*(t - 1)))- exp(-i*(t*th12 + t*th22 -...
+%     th11*(t - 1) - th21*(t - 1))))/(2*i)+ length1*(exp(i*(t*th12 - th11*(t - 1)))-exp(-i*(t*th12 - th11*(t - 1))))/(2*i);
+
+pytilde(t) = length3*sin(t*th12 + t*th22 + t*th32 - th11*(t - 1) - ...
+    th21*(t - 1) - th31*(t - 1)) + length2*sin(t*th12 + t*th22 -...
+    th11*(t - 1) - th21*(t - 1)) + length1*sin(t*th12 - th11*(t - 1));
+
 pxtilde(t) = length3*cos(t*th12 + t*th22 + t*th32 - th11*(t - 1)...
     - th21*(t - 1) - th31*(t - 1)) + length2*cos(t*th12 + t*th22 -...
     th11*(t - 1) - th21*(t - 1)) + length1*cos(t*th12 - th11*(t - 1));
@@ -46,6 +63,12 @@ pxtilde_sub(t) = subs(pxtilde, [th11, th12, th21, th22, th31,th32,length1, ...
     length2,length3], [j1(1), j2(1),j1(2), j2(2),j1(3),j2(3),arms(1),arms(2),arms(3)]);
 pytilde_sub(t) = subs(pytilde, [th11, th12, th21, th22, th31,th32,length1, ...
     length2,length3], [j1(1), j2(1),j1(2), j2(2),j1(3),j2(3),arms(1),arms(2),arms(3)]);
+
+pxtilde_exp = rewrite(pxtilde_sub, 'exp')
+pytilde_exp = rewrite(pytilde_sub, 'exp')
+
+pxtilde_sub = pxtilde_exp
+pytilde_sub = pytilde_exp
 
 max_t_y = solve(diff(py_sub-pytilde_sub)==0,t) %das t wo y die maximale abweichung hat
 max_t_x = solve(diff(px_sub- pxtilde_sub)==0,t)
@@ -89,8 +112,9 @@ if(exy > error_size)
 
 l(t) = ((px_sub-pxtilde_sub)^2+(py_sub-pytilde_sub)^2)
 t_err = solve(diff(l)==0,t)
-max_err = l(t_err)
+max_err = real(l(t_err))
 poss2 = [poss2,double(max_err)]
+l_array = {l_array, l}
 if(max_err > error_size)
 %     error_flag = 1
 %     newsampling = [newsampling sampling(:,i-1)*(0.5)+sampling(:,i)*0.5]
@@ -99,6 +123,34 @@ end
 end
 
 newsampling = [newsampling sampling(:,i)]
+%plotting
+%originale linie
+line = sample(start_pt,end_pt,-1,sSize2); %sample points from line
+%markiere alle punkte vom newsampling
+T = linspace(0,1,sSize2)
+for i = 1:length(T)
+val = subs(pxtilde_sub,t,T(i))
+pxtilde_sub_i(i) = val;
+end
+T = linspace(0,1,sSize2)
+for i = 1:length(T)
+val = subs(pytilde_sub,t,T(i))
+pytilde_sub_i(i) = val;
+end
+figure;
+plot(pxtilde_sub_i, pytilde_sub_i); %plotte transformierte Punkte
+hold on;
+plot(line(1,:),line(2,:))
+hold on;
+plot(newsampling(1,:),newsampling(2,:), 'o')
+elementindex = 0
+for el= 1:size(l_array,2)
+    elementindex = el
+    T = linspace(el-1,el,sSize2)
+figure;
+%fplot(l_array,[0 1]); hold on; plot([0 1], [poss1(elementindex), poss1(elementindex)])
+end
+         
 sampling = double(newsampling)
 angles = zeros(1,size(sampling,2))
 if(error_flag == 0) %nie ein fehler aufgetreten
@@ -106,6 +158,7 @@ if(error_flag == 0) %nie ein fehler aufgetreten
 end
 
 end
+
 figure;
 plot(poss1)
 figure;
