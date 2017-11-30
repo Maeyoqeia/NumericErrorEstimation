@@ -20,9 +20,9 @@ while(1)
     newsampling = [];
     exy_array = []
     l_array_max = []
-    l_array = []
-    px_array = []
-    py_array = []
+    l_array = {}
+    px_array = {}
+    py_array = {}
     for i = 2:size(transformed_pts_jsp,2)
         
         newsampling = [newsampling sampling(:,i-1)]
@@ -73,8 +73,8 @@ while(1)
         
         pxtilde_sub = pxtilde_exp
         pytilde_sub = pytilde_exp
-        px_array  = [px_array pxtilde_sub]
-        py_array = [py_array pytilde_sub]
+        px_array{end+1} = (real(pxtilde_sub))
+        py_array{end +1} = (real(pytilde_sub))
         max_t_y = solve(diff(py_sub-pytilde_sub)==0,t) %das t wo y die maximale abweichung hat
         max_t_x = solve(diff(px_sub- pxtilde_sub)==0,t)
         
@@ -106,7 +106,7 @@ while(1)
         Ex = abs(max_x - punktx)
         Ey = abs(max_y-punkty)
         exy = (Ex^2+Ey^2)
-        exy_array = [exy_array double(exy)]
+        exy_array(end+1) = double(exy)
         if(exy > error_size)
             error_flag = 1
             newsampling = [newsampling sampling(:,i-1)*(0.5)+sampling(:,i)*0.5]
@@ -119,7 +119,7 @@ while(1)
         t_err = solve(diff(l)==0,t)
         max_err = double(real(l(t_err)))
         l_array_max = [l_array_max double(max_err)]
-        l_array = {l_array real(l)}
+        l_array{end+1} = real(l)
         if(max_err > error_size)
             %     error_flag = 1
             %     newsampling = [newsampling sampling(:,i-1)*(0.5)+sampling(:,i)*0.5]

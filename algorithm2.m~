@@ -18,8 +18,8 @@ while(1)
     transformed_pts_jsp = (transform(sampling, angles,arms)) %to joint space
     error_flag = 0;
     newsampling = [];
-    poss1 = []
-    poss2 = []
+    exy_array = []
+    l_array_max = []
     l_array = []
     px_array = []
     py_array = []
@@ -73,8 +73,8 @@ while(1)
         
         pxtilde_sub = pxtilde_exp
         pytilde_sub = pytilde_exp
-        px_array  = [px_array pxtilde_sub]
-        py_array = [py_array pytilde_sub]
+        px_array[end+1]  = pxtilde_sub
+        py_array[end +1 ] = pytilde_sub
         max_t_y = solve(diff(py_sub-pytilde_sub)==0,t) %das t wo y die maximale abweichung hat
         max_t_x = solve(diff(px_sub- pxtilde_sub)==0,t)
         
@@ -106,7 +106,7 @@ while(1)
         Ex = abs(max_x - punktx)
         Ey = abs(max_y-punkty)
         exy = (Ex^2+Ey^2)
-        poss1 = [poss1 double(exy)]
+        exy_array[end+1 = [exy_array double(exy)]
         if(exy > error_size)
             error_flag = 1
             newsampling = [newsampling sampling(:,i-1)*(0.5)+sampling(:,i)*0.5]
@@ -118,7 +118,7 @@ while(1)
         l(t) = ((px_sub-pxtilde_sub)^2+(py_sub-pytilde_sub)^2)
         t_err = solve(diff(l)==0,t)
         max_err = double(real(l(t_err)))
-        poss2 = [poss2 double(max_err)]
+        l_array_max = [l_array_max double(max_err)]
         l_array = {l_array real(l)}
         if(max_err > error_size)
             %     error_flag = 1
@@ -153,11 +153,18 @@ while(1)
         plot(pxtilde_sub_i, pytilde_sub_i); %plotte transformierte Punkte
         hold on;
     end
-    elementindex = 0
-    for el= 1:size(l_array,2)
-        T = linspace(el-1,el,sSize2)
-        figure;
-        fplot(l_array{2},[0 1]); hold on; plot([0 1], [poss1(elementindex), poss1(elementindex)])
+    figure; %plot errors
+    for el= 1:size(l_array,2)-1
+        l_curr = l_array(el)
+        T = linspace(0,1,sSize2)
+        for i = 1:length(T)
+            val = subs(l_curr,t,T(i))
+            l_curr_i(i) = val;
+        end
+        T_larray = linspace(el,el+1,sSize2)
+        plot(l_curr_i,T_larray); 
+        hold on; 
+        plot([el, el+1], [exy_array(el), exy_array(el)])
     end
     
     sampling = double(newsampling)
@@ -169,9 +176,9 @@ while(1)
 end
 
 figure;
-plot(poss1)
+plot(exy_array)
 figure;
-plot(poss2)
+plot(l_array_max)
 file_name = 'description.txt';
 full_name = fullfile(dir_path, file_name);
 fileID = fopen(full_name,'wt');
