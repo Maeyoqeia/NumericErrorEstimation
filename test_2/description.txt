@@ -1,5 +1,5 @@
 Fehlergröße: 0.010000
-Samplesize1: 3
+Samplesize1: 2
 Samplesize2: 40
-Startpunkt: (1,2)
+Startpunkt: (2,1)
 Endpunkt: (1,1)

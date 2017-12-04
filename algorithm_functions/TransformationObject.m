@@ -4,13 +4,13 @@ classdef TransformationObject < handle
     
     properties
         sampleSize_1
-        sampleSize_2       
+        sampleSize_2
         start_pt
         end_pt
         angles
         arms
-        original_pts       
-        transformed_pts_tsp        
+        original_pts
+        transformed_pts_tsp
         transformed_pts_jsp
         error
         trajectory
@@ -23,6 +23,7 @@ classdef TransformationObject < handle
         iteration
         testnumber
         def
+        singularity
     end
     
     methods
@@ -40,11 +41,14 @@ classdef TransformationObject < handle
         end
         function obj = toJSpace(obj)
             obj.original_pts = sample(obj.start_pt,obj.end_pt,-1,obj.sampleSize_1); %sample points from line
-           % [obj.original_pts_polar_phi,obj.original_pts_polar_r] = cart2pol(obj.original_pts(1,:),(obj.original_pts(2,:)));
-            obj.transformed_pts_jsp = (transform(obj.original_pts, obj.angles,obj.arms)); %to joint space
+            % [obj.original_pts_polar_phi,obj.original_pts_polar_r] = cart2pol(obj.original_pts(1,:),(obj.original_pts(2,:)));
+            [obj.transformed_pts_jsp,singularity] = (transform(obj.original_pts, obj.angles,obj.arms)); %to joint space
+            if((obj.transformed_pts_jsp(2,1)-obj.transformed_pts_jsp(2,end))> pi)
+                obj.singularity = 1;
+            end
             %berechne determinante von jacobi matrix mit werten(winkeln)
             %aus den spalten von pts_jsp
-                      
+            
         end
         function obj = trajGen(obj)
             %build trajectory from transformed points
@@ -56,19 +60,19 @@ classdef TransformationObject < handle
                 if p==1
                     obj.def(p) = 0;
                 else
-                 obj.def(p) = obj.dets2(p)-obj.dets2(p-1);
+                    obj.def(p) = obj.dets2(p)-obj.dets2(p-1);
                 end
-            obj.kond2(p) = cond(j);
+                obj.kond2(p) = cond(j);
             end
         end
         function obj = toTSpace(obj)
-            obj.transformed_pts_tsp = retransform(obj.arms,obj.trajectory); %from joint space to 
+            obj.transformed_pts_tsp = retransform(obj.arms,obj.trajectory); %from joint space to
         end
         function obj = computeError(obj)
             ori_pts = [];
             ori_pts(1,:) = sample_multiple(obj.original_pts(1,:), obj.sampleSize_2);
             ori_pts(2,:) = sample_multiple(obj.original_pts(2,:),obj.sampleSize_2);
-
+            
             trs_pts = obj.transformed_pts_tsp;
             trs_pts(3,:) = [];
             abstand = sqrt(sum((trs_pts - ori_pts).^2));
@@ -82,7 +86,7 @@ classdef TransformationObject < handle
             ori_pts = [];
             ori_pts(1,:) = sample_multiple(obj.original_pts(1,:), obj.sampleSize_2);
             ori_pts(2,:) = sample_multiple(obj.original_pts(2,:),obj.sampleSize_2);
-
+            
             trs_pts = obj.transformed_pts_tsp;
             trs_pts(3,:) = [];
             
@@ -90,9 +94,9 @@ classdef TransformationObject < handle
             ax1 = subplot(2,1,1);
             l = length(obj.error);
             five_p = ceil(l*0.05);
-            [sorted_values,sortIndex] = sort(obj.error(:),'descend');  
+            [sorted_values,sortIndex] = sort(obj.error(:),'descend');
             max_index = sortIndex(1:five_p);  %# Get a linear index into A of the 5 largest values
-        
+            
             h(1) = plot(obj.error);
             %line(xlim,[min_val,min_val])
             hold on;
@@ -102,7 +106,7 @@ classdef TransformationObject < handle
             ylabel('Fehlergröße')
             legend(h, 'Fehler', '5% der Maximalwerte','Location','southeastoutside')
             title(ax1,str);
-
+            
             ax2 = subplot(2,1,2);
             plot(obj.transformed_pts_tsp(1,:),obj.transformed_pts_tsp(2,:));
             hold on;
@@ -114,7 +118,11 @@ classdef TransformationObject < handle
             xlabel('Weg in x-Richtung')
             ylabel('Weg in y-Richtung')
             legend(j, 'Startpunkt', 'Endpunkt','Location','southeastoutside')
-            title(ax2,'Originale und transformierte Punkte');
+            tit = sprintf('Originale und transformierte Punkte');
+            if(obj.singularity == 1)
+                tit = sprintf('Originale und transformierte Punkte, SINGULARITÄT');
+            end
+            title(ax2,tit);
             hold off;
             str = sprintf('test%d/iteration%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
@@ -126,7 +134,7 @@ classdef TransformationObject < handle
             title('Determinante und Fehler')
             str = sprintf('test%d/determinante_und_fehler%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str)
-      
+            
             figure('visible','off');
             plot(obj.dets2)
             xlabel('Samplingpunkte')
@@ -150,13 +158,13 @@ classdef TransformationObject < handle
             title('Konditionszahl')
             str = sprintf('test%d/konditionszahl%d.jpg',obj.testnumber,obj.iteration);
             saveas(gcf,str);
-
+            
             %plot trajectory in joint space
             figure('visible','off');
             plot3(obj.trajectory(1,:),obj.trajectory(2,:),obj.trajectory(3,:))
             axis([-pi pi -pi pi -pi pi])
-       end
-    
+        end
+        
     end
 end
 

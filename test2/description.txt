@@ -1,3 +1,5 @@
-Fehlergröße 0.001000
-Samplesize1 5
-Samplesize2 40
+Fehlergröße: 0.010000
+Samplesize1: 3
+Samplesize2: 40
+Startpunkt: (2,1)
+Endpunkt: (1,1)

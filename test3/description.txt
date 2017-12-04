@@ -1,3 +1,0 @@
-Fehlergröße 0.001000
-Samplesize1 17
-Samplesize2 40
